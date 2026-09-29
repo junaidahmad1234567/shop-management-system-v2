@@ -1,0 +1,1681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System-Navigator Restaurant POS</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background-color: #1e293b;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 10px;
+    }
+
+    /* Main Window Container */
+    .app-container {
+      width: 100%;
+      max-width: 1250px;
+      background-color: #d1dbe5;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation Bar */
+    .top-nav {
+      background-color: #d1dbe5;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 16px;
+      border-bottom: 2px solid #b0bec5;
+    }
+
+    .brand-title {
+      font-family: 'Brush Script MT', cursive, sans-serif;
+      font-size: 28px;
+      font-weight: bold;
+      color: #1a237e;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .nav-links button, .nav-links a {
+      background: none;
+      border: none;
+      color: #333;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .nav-links .btn-home {
+      background-color: #ffffff;
+      padding: 5px 14px;
+      border-radius: 15px;
+      color: #1a237e;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Main Layout */
+    .pos-body {
+      display: flex;
+      padding: 8px;
+      gap: 8px;
+      height: 660px;
+    }
+
+    /* Left Sidebar: Categories */
+    .sidebar-categories {
+      width: 175px;
+      background-color: #b9f6ca;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow-y: auto;
+      border-radius: 4px;
+    }
+
+    .sidebar-header {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+
+    .sidebar-header input {
+      padding: 4px;
+      font-size: 11px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+
+    .cat-actions-bar {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+
+    .btn-cat-mgmt {
+      flex: 1;
+      background-color: #0288d1;
+      color: white;
+      border: none;
+      padding: 4px 2px;
+      font-size: 10px;
+      font-weight: bold;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .category-btn-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      margin-bottom: 2px;
+    }
+
+    .category-btn {
+      flex: 1;
+      background-color: #a7f3d0;
+      border: 1px solid #6ee7b7;
+      padding: 7px 6px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: bold;
+      color: #065f46;
+      cursor: pointer;
+      border-radius: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .category-btn.active {
+      background-color: #81d4fa;
+      color: #0277bd;
+      border-color: #29b6f6;
+    }
+
+    .btn-cat-opt {
+      background: rgba(0,0,0,0.1);
+      border: none;
+      font-size: 10px;
+      cursor: pointer;
+      padding: 6px 4px;
+      border-radius: 3px;
+      color: #333;
+    }
+
+    .btn-cat-opt:hover {
+      background: rgba(0,0,0,0.2);
+    }
+
+    .btn-add-product {
+      background-color: #10b981;
+      color: white;
+      border: none;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 6px;
+      text-align: center;
+    }
+
+    /* Middle Area: Items Grid */
+    .items-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .items-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      overflow-y: auto;
+      padding: 2px;
+      align-content: start;
+    }
+
+    .item-card {
+      background: #ffffff;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 4px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.1s, border-color 0.1s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .item-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .item-card.selected {
+      background-color: #81d4fa;
+      border: 2px solid #0288d1;
+    }
+
+    .item-card-img-wrapper {
+      position: relative;
+      width: 100%;
+      height: 75px;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+
+    .item-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .card-actions {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      display: flex;
+      gap: 2px;
+    }
+
+    .btn-card-action {
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      font-size: 9px;
+      padding: 2px 4px;
+      border-radius: 3px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-card-action.btn-del {
+      background: rgba(220, 38, 38, 0.85);
+    }
+
+    .item-price {
+      font-weight: bold;
+      font-size: 13px;
+      color: #000;
+    }
+
+    .item-title {
+      font-size: 11px;
+      color: #444;
+      margin-top: 2px;
+      line-height: 1.2;
+    }
+
+    /* Bottom Action Controls */
+    .bottom-controls {
+      background: #e0e0e0;
+      padding: 6px;
+      border-radius: 4px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .bottom-controls input {
+      padding: 5px;
+      font-size: 11px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      width: 90px;
+    }
+
+    .action-btn {
+      border: none;
+      padding: 6px 8px;
+      font-size: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+
+    .btn-hold { background-color: #ffd54f; color: #5d4037; }
+    .btn-holded { background-color: #dce775; color: #33691e; }
+    .btn-kot { background-color: #dce775; color: #33691e; }
+
+    /* Right Panel: Receipt & Numpad */
+    .right-panel {
+      width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* Cart Summary Table */
+    .cart-summary {
+      background: #ffffff;
+      border-radius: 4px;
+      height: 170px;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #ccc;
+    }
+
+    .cart-header {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 20px;
+      padding: 5px 8px;
+      background: #eee;
+      font-size: 11px;
+      font-weight: bold;
+      color: #555;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .cart-items {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+
+    .cart-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 20px;
+      padding: 3px 0;
+      border-bottom: 1px dashed #eee;
+      align-items: center;
+    }
+
+    .btn-del-item {
+      color: #ef4444;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    /* Calc Mode Bar */
+    .calc-mode-bar {
+      background: #334155;
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .calc-toggle {
+      display: flex;
+      background: #1e293b;
+      border-radius: 3px;
+      padding: 2px;
+    }
+
+    .calc-toggle-btn {
+      padding: 2px 8px;
+      font-size: 10px;
+      border: none;
+      background: none;
+      color: #94a3b8;
+      cursor: pointer;
+      border-radius: 2px;
+      font-weight: bold;
+    }
+
+    .calc-toggle-btn.active {
+      background: #2563eb;
+      color: #fff;
+    }
+
+    /* Payment Display */
+    .payment-display {
+      background: #ffffff;
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .payment-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .payment-row.balance {
+      color: #d32f2f;
+    }
+
+    /* Keyboard Instructions Banner */
+    .kb-hint {
+      font-size: 9px;
+      color: #64748b;
+      text-align: center;
+      background: #f1f5f9;
+      padding: 2px;
+      border-radius: 3px;
+      border: 1px dashed #cbd5e1;
+    }
+
+    /* Order Mode Toggle */
+    .order-mode {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .order-mode select {
+      padding: 4px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-weight: bold;
+      font-size: 11px;
+    }
+
+    .mode-buttons {
+      display: flex;
+      gap: 4px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 6px 4px;
+      border: none;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 3px;
+      background-color: #e0e0e0;
+      text-align: center;
+    }
+
+    .mode-btn.active {
+      background-color: #f57c00;
+      color: white;
+    }
+
+    /* Keypad Grid */
+    .numpad-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+    }
+
+    .key-btn {
+      background-color: #64b5f6;
+      color: white;
+      border: none;
+      padding: 10px 0;
+      font-size: 15px;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+      box-shadow: 0 2px 0 #1e88e5;
+    }
+
+    .key-btn:active {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+
+    .key-btn.action {
+      background-color: #81d4fa;
+      color: #01579b;
+      font-size: 11px;
+      box-shadow: 0 2px 0 #29b6f6;
+    }
+
+    .key-btn.kot {
+      background-color: #81c784;
+      color: #1b5e20;
+      box-shadow: 0 2px 0 #4caf50;
+    }
+
+    .key-btn.checkout {
+      background-color: #ffe082;
+      color: #f57f17;
+      box-shadow: 0 2px 0 #ffca28;
+    }
+
+    .key-btn.backspace {
+      background-color: #e57373;
+      color: white;
+      box-shadow: 0 2px 0 #ef5350;
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 16px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-card.wide {
+      max-width: 880px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+
+    .modal-header h3 {
+      font-size: 16px;
+      color: #1e293b;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #64748b;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: bold;
+      color: #334155;
+      margin-bottom: 4px;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 6px;
+      font-size: 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .img-preview {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 4px;
+      border: 1px dashed #ccc;
+      margin-top: 6px;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 8px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    /* History Table & Sales Summary Styling */
+    .history-filter-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      background-color: #f8fafc;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      flex-wrap: wrap;
+    }
+
+    .filter-controls-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: bold;
+      color: #334155;
+    }
+
+    .filter-item select, .filter-item input {
+      padding: 4px 8px;
+      font-size: 11px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      background: #fff;
+    }
+
+    .btn-reset-filters {
+      background-color: #e2e8f0;
+      color: #334155;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-clear-history {
+      background-color: #ef4444;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-clear-history:hover {
+      background-color: #dc2626;
+    }
+
+    /* Sales Summary Metric Cards */
+    .sales-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .summary-card {
+      background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+      border: 1px solid #bae6fd;
+      padding: 10px;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    .summary-card.total-sales {
+      background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+      border-color: #a7f3d0;
+    }
+
+    .summary-card.orders-count {
+      background: linear-gradient(135deg, #fefce8, #fef08a);
+      border-color: #fef08a;
+    }
+
+    .summary-card .title {
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+
+    .summary-card .value {
+      font-size: 18px;
+      font-weight: bold;
+      color: #0f172a;
+    }
+
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+
+    .history-table th, .history-table td {
+      border: 1px solid #e2e8f0;
+      padding: 6px 8px;
+      text-align: left;
+    }
+
+    .history-table th {
+      background-color: #f1f5f9;
+    }
+
+    .badge {
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 9px;
+      font-weight: bold;
+    }
+
+    .badge-completed { background: #dcfce7; color: #166534; }
+
+    /* Printable Receipt Styling */
+    @media print {
+      body * { visibility: hidden; }
+      #printableArea, #printableArea * { visibility: visible; }
+      #printableArea { position: absolute; left: 0; top: 0; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Top Nav -->
+    <header class="top-nav">
+      <div class="brand-title">System-Navigator</div>
+      <nav class="nav-links">
+        <button onclick="openAddProductModal()">Admin</button> |
+        <button onclick="alert('Loan module ready.')">Loan</button> |
+        <button onclick="alert('Return module ready.')">Return</button> |
+        <button onclick="openAddProductModal()">Insert</button> |
+        <button onclick="alert('Stock management module ready.')">Stock</button> |
+        <button onclick="openHistoryModal()">Dashboard / History</button>
+        <button class="btn-home" onclick="location.reload()">Home</button>
+      </nav>
+    </header>
+
+    <!-- Main POS Body -->
+    <div class="pos-body">
+      
+      <!-- Category Sidebar -->
+      <aside class="sidebar-categories">
+        <div class="sidebar-header">
+          <input type="text" id="headerCodeInput" value="4208" style="width: 45px;" onchange="updateHeaderCode(this.value)">
+          <input type="text" id="headerNameInput" value="Repri" style="width: 55px;" onchange="updateHeaderName(this.value)">
+        </div>
+        <div class="cat-actions-bar">
+          <button class="btn-cat-mgmt" onclick="openAddCategoryModal()">+ Category</button>
+          <button class="btn-cat-mgmt" style="background:#059669;" onclick="resetCategories()">Reset</button>
+        </div>
+        <div id="categoryList"></div>
+        <button class="btn-add-product" onclick="openAddProductModal()">+ Add Photo Item</button>
+      </aside>
+
+      <!-- Items Grid Area -->
+      <main class="items-container">
+        <div class="items-grid" id="itemsGrid"></div>
+
+        <!-- Controls Bar -->
+        <div class="bottom-controls">
+          <input type="text" id="tableName" placeholder="table / name">
+          <button class="action-btn btn-hold" onclick="holdCurrentBill()">Hold Bill</button>
+          <button class="action-btn btn-holded" onclick="openHoldedBillsModal()">Holded Bills (<span id="holdCount">0</span>)</button>
+          <button class="action-btn btn-kot" onclick="printKOT()">KOT</button>
+          <input type="number" id="qtyInput" placeholder="Quantity" value="1" min="1">
+        </div>
+      </main>
+
+      <!-- Right Panel: Receipt & Numpad -->
+      <aside class="right-panel">
+        
+        <!-- Cart Table -->
+        <div class="cart-summary">
+          <div class="cart-header">
+            <span>Description</span>
+            <span>Price</span>
+            <span>Qty</span>
+            <span></span>
+          </div>
+          <div class="cart-items" id="cartItems"></div>
+        </div>
+
+        <!-- Calc Mode Selector -->
+        <div class="calc-mode-bar">
+          <span>Calculation Mode:</span>
+          <div class="calc-toggle">
+            <button class="calc-toggle-btn active" id="btnModeAuto" onclick="setCalcMode('auto')">Auto</button>
+            <button class="calc-toggle-btn" id="btnModeManual" onclick="setCalcMode('manual')">Manual</button>
+          </div>
+        </div>
+
+        <!-- Payment Display -->
+        <div class="payment-display">
+          <div class="payment-row">
+            <span>Total</span>
+            <span id="totalDisplay">Rs 0.00</span>
+          </div>
+          <div class="payment-row">
+            <span>Cash</span>
+            <span id="cashDisplay">Rs 0</span>
+          </div>
+          <div class="payment-row balance">
+            <span>Balance</span>
+            <span id="balanceDisplay">Rs 0.00</span>
+          </div>
+        </div>
+
+        <div class="kb-hint">⌨️ Physical Numpad active: 0-9, Enter, Backspace, Space (Hold), K (KOT)</div>
+
+        <!-- Order Mode Toggle -->
+        <div class="order-mode">
+          <select id="orderTypeSelect" onchange="setOrderType(this.value)">
+            <option value="Takeaway">Takeaway</option>
+            <option value="Dine-In">Dine-In</option>
+            <option value="Delivery">Delivery</option>
+          </select>
+          <div class="mode-buttons">
+            <button class="mode-btn" id="btnTypeDine" onclick="setOrderType('Dine-In')">Dine-In</button>
+            <button class="mode-btn" id="btnTypeDelivery" onclick="setOrderType('Delivery')">Delivery</button>
+            <button class="mode-btn active" id="btnTypeTakeaway" onclick="setOrderType('Takeaway')">Takeaway</button>
+          </div>
+        </div>
+
+        <!-- Keypad Grid -->
+        <div class="numpad-grid">
+          <button class="key-btn" onclick="pressKey('1')">1</button>
+          <button class="key-btn" onclick="pressKey('2')">2</button>
+          <button class="key-btn" onclick="pressKey('3')">3</button>
+          <button class="key-btn action" onclick="pressEnter()">Enter</button>
+
+          <button class="key-btn" onclick="pressKey('4')">4</button>
+          <button class="key-btn" onclick="pressKey('5')">5</button>
+          <button class="key-btn" onclick="pressKey('6')">6</button>
+          <button class="key-btn action" onclick="holdCurrentBill()">Hold</button>
+
+          <button class="key-btn" onclick="pressKey('7')">7</button>
+          <button class="key-btn" onclick="pressKey('8')">8</button>
+          <button class="key-btn" onclick="pressKey('9')">9</button>
+          <button class="key-btn kot" onclick="printKOT()">KOT</button>
+
+          <button class="key-btn" onclick="pressKey('.')">.</button>
+          <button class="key-btn" onclick="pressKey('0')">0</button>
+          <button class="key-btn backspace" onclick="pressKey('back')">⌫</button>
+          <button class="key-btn checkout" id="checkoutBtn" onclick="processCheckout()">Checkout</button>
+        </div>
+
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- Hidden Photo File Input for Quick Swap -->
+  <input type="file" id="quickFileInput" accept="image/*" style="display:none;" onchange="handleQuickPhotoUpload(event)">
+
+  <!-- Add Category Modal -->
+  <div class="modal-overlay" id="addCategoryModal" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Add New Category</h3>
+        <button class="modal-close" onclick="closeModal('addCategoryModal')">×</button>
+      </div>
+      <form onsubmit="saveNewCategory(event)">
+        <div class="form-group">
+          <label>Category Name</label>
+          <input type="text" id="newCatTitle" required placeholder="e.g. Desserts">
+        </div>
+        <div class="form-group">
+          <label>Category Number / Code</label>
+          <input type="text" id="newCatNumber" required placeholder="e.g. #13">
+        </div>
+        <button type="submit" class="btn-submit">Add Category</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Category Modal -->
+  <div class="modal-overlay" id="editCategoryModal" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Edit Category</h3>
+        <button class="modal-close" onclick="closeModal('editCategoryModal')">×</button>
+      </div>
+      <form onsubmit="saveEditCategory(event)">
+        <input type="hidden" id="editCatIndex">
+        <div class="form-group">
+          <label>Category Name</label>
+          <input type="text" id="editCatTitle" required>
+        </div>
+        <div class="form-group">
+          <label>Category Number / Code</label>
+          <input type="text" id="editCatNumber" required>
+        </div>
+        <button type="submit" class="btn-submit">Update Category</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Product / Photo Modal -->
+  <div class="modal-overlay" id="addProductModal" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Add New Product with Picture</h3>
+        <button class="modal-close" onclick="closeModal('addProductModal')">×</button>
+      </div>
+      <form onsubmit="saveNewProduct(event)">
+        <div class="form-group">
+          <label>Product Name</label>
+          <input type="text" id="newProdName" required placeholder="e.g. Seafood Noodles">
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="newProdCat"></select>
+        </div>
+        <div class="form-group">
+          <label>Price (Rs)</label>
+          <input type="number" id="newProdPrice" required placeholder="e.g. 1200">
+        </div>
+        <div class="form-group">
+          <label>Select Picture File</label>
+          <input type="file" accept="image/*" onchange="previewImageFile(event)">
+        </div>
+        <div class="form-group">
+          <label>Or Paste Picture URL</label>
+          <input type="text" id="newProdUrl" placeholder="https://..." oninput="previewImageUrl(this.value)">
+        </div>
+        <img id="modalImgPreview" class="img-preview" src="https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=200" alt="Preview">
+        <button type="submit" class="btn-submit">Save Product</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Holded Bills Modal -->
+  <div class="modal-overlay" id="holdedModal" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Holded Bills</h3>
+        <button class="modal-close" onclick="closeModal('holdedModal')">×</button>
+      </div>
+      <div id="holdedBillsList"></div>
+    </div>
+  </div>
+
+  <!-- History / Dashboard Modal -->
+  <div class="modal-overlay" id="historyModal" style="display:none;">
+    <div class="modal-card wide">
+      <div class="modal-header">
+        <h3>Sales History & Financial Logs</h3>
+        <button class="modal-close" onclick="closeModal('historyModal')">×</button>
+      </div>
+      
+      <!-- Filter Bar with Date Selector -->
+      <div class="history-filter-bar">
+        <div class="filter-controls-group">
+          <div class="filter-item">
+            <label>Filter Year:</label>
+            <select id="historyYearFilter" onchange="renderHistoryTable()">
+              <option value="ALL">All Years</option>
+              <option value="2026">2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>Specific Date:</label>
+            <input type="date" id="historyDateFilter" onchange="renderHistoryTable()">
+          </div>
+          <button class="btn-reset-filters" onclick="resetHistoryFilters()">Reset Filters</button>
+        </div>
+
+        <button class="btn-clear-history" onclick="clearHistory()">Clear History</button>
+      </div>
+
+      <!-- Sales Summary Cards -->
+      <div class="sales-summary-grid">
+        <div class="summary-card total-sales">
+          <div class="title">Total Sell Amount</div>
+          <div class="value" id="summaryTotalSales">Rs 0.00</div>
+        </div>
+        <div class="summary-card orders-count">
+          <div class="title">Total Orders</div>
+          <div class="value" id="summaryTotalOrders">0</div>
+        </div>
+        <div class="summary-card">
+          <div class="title">Average Order Value</div>
+          <div class="value" id="summaryAvgOrder">Rs 0.00</div>
+        </div>
+      </div>
+
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Bill No</th>
+            <th>Date & Time</th>
+            <th>Year</th>
+            <th>Type</th>
+            <th>Table/Name</th>
+            <th>Total (Rs)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="historyTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Printable Area Container -->
+  <div id="printableArea"></div>
+
+  <script>
+    // Default Categories
+    const defaultCategories = [
+      { name: "Breakfast", num: "#1" },
+      { name: "Rice & Curry", num: "#2" },
+      { name: "Fried Rice", num: "#3" },
+      { name: "Noodles", num: "#4" },
+      { name: "Koththu", num: "#5" },
+      { name: "Biriyani", num: "#6" },
+      { name: "Sawan", num: "#7" },
+      { name: "Side Dishes", num: "#8" },
+      { name: "Short Eats", num: "#9" },
+      { name: "Rotty", num: "#10" },
+      { name: "Tea", num: "#11" },
+      { name: "Beverages", num: "#12" }
+    ];
+
+    function formatCatName(cat) {
+      if (typeof cat === 'string') return cat;
+      return `${cat.name} ${cat.num}`;
+    }
+
+    const defaultProducts = [
+      { id: 101, cat: "Rice & Curry #2", name: "Ghee Rice", price: 90, img: "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=200" },
+      { id: 102, cat: "Side Dishes #8", name: "Beef Fry", price: 100, img: "https://images.unsplash.com/photo-1544025162-d76694265947?w=200" },
+      { id: 103, cat: "Short Eats #9", name: "Milk Peda", price: 10, img: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=200" },
+      { id: 1, cat: "Noodles #4", name: "Noodles Prawns F", price: 1200, img: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=200" },
+      { id: 2, cat: "Noodles #4", name: "Noodles Beef N", price: 800, img: "https://images.unsplash.com/photo-1552611052-33e04de081de?w=200" },
+      { id: 3, cat: "Noodles #4", name: "Noodles Beef F", price: 1000, img: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=200" },
+      { id: 4, cat: "Noodles #4", name: "Fish Noodles N", price: 650, img: "https://images.unsplash.com/photo-1612927601601-6638404737ce?w=200" },
+      { id: 5, cat: "Noodles #4", name: "Fish Noodles F", price: 900, img: "https://images.unsplash.com/photo-1612927601601-6638404737ce?w=200" },
+      { id: 6, cat: "Noodles #4", name: "Fish Noodles F", price: 1100, img: "https://images.unsplash.com/photo-1612927601601-6638404737ce?w=200" },
+      { id: 7, cat: "Noodles #4", name: "Egg Noodles N", price: 500, img: "https://images.unsplash.com/photo-1552611052-33e04de081de?w=200" },
+      { id: 8, cat: "Noodles #4", name: "Egg Noodles F", price: 700, img: "https://images.unsplash.com/photo-1552611052-33e04de081de?w=200" },
+      { id: 9, cat: "Noodles #4", name: "Chicken Noodles N", price: 650, img: "https://images.unsplash.com/photo-1612927601601-6638404737ce?w=200" },
+      { id: 10, cat: "Noodles #4", name: "Chicken Noodles F", price: 900, img: "https://images.unsplash.com/photo-1612927601601-6638404737ce?w=200" },
+      { id: 11, cat: "Noodles #4", name: "Chicken Noodles F", price: 1100, img: "https://images.unsplash.com/photo-1612927601601-6638404737ce?w=200" },
+      { id: 12, cat: "Noodles #4", name: "All Mix Noodles N", price: 950, img: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=200" },
+      { id: 13, cat: "Noodles #4", name: "All Mix Noodles F", price: 1250, img: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=200" }
+    ];
+
+    let categoriesList = JSON.parse(localStorage.getItem('sys_pos_categories')) || defaultCategories;
+    let products = JSON.parse(localStorage.getItem('sys_pos_products')) || defaultProducts;
+    let headerCode = localStorage.getItem('sys_pos_header_code') || "4208";
+    let headerName = localStorage.getItem('sys_pos_header_name') || "Repri";
+    
+    let selectedCategory = formatCatName(categoriesList[3] || categoriesList[0]);
+    let cart = [];
+    let cashInput = "0";
+    let calcMode = 'auto';
+    let orderType = 'Takeaway';
+    let orderCounter = parseInt(localStorage.getItem('sys_pos_order_counter')) || 6;
+    let heldBills = JSON.parse(localStorage.getItem('sys_pos_held_bills')) || [];
+    let salesHistory = JSON.parse(localStorage.getItem('sys_pos_history')) || [
+      { id: "Bill No: 5", timestamp: "2026-09-29 00:31", year: "2026", type: "Takeaway", name: "Customer", total: 2050, status: "Completed" },
+      { id: "Bill No: 4", timestamp: "2026-09-29 00:28", year: "2026", type: "Takeaway", name: "Customer", total: 6050, status: "Completed" },
+      { id: "Bill No: 3", timestamp: "2026-09-29 00:24", year: "2026", type: "Takeaway", name: "Customer", total: 2400, status: "Completed" },
+      { id: "Bill No: 2", timestamp: "2026-09-29 00:22", year: "2026", type: "Takeaway", name: "Customer", total: 7600, status: "Completed" },
+      { id: "Bill No: 1", timestamp: "2026-09-29 00:19", year: "2026", type: "Takeaway", name: "Customer", total: 1000, status: "Completed" },
+      { id: "ORD-781", timestamp: "2026-09-29 00:13", year: "2026", type: "Takeaway", name: "Customer", total: 2100, status: "Completed" },
+      { id: "ORD-582", timestamp: "2026-09-29 00:12", year: "2026", type: "Takeaway", name: "Customer", total: 2850, status: "Completed" }
+    ];
+    let manualTotal = 0;
+    let quickPhotoTargetId = null;
+    let uploadedModalBase64 = "";
+
+    document.getElementById('headerCodeInput').value = headerCode;
+    document.getElementById('headerNameInput').value = headerName;
+
+    function updateHeaderCode(val) {
+      headerCode = val;
+      localStorage.setItem('sys_pos_header_code', val);
+    }
+
+    function updateHeaderName(val) {
+      headerName = val;
+      localStorage.setItem('sys_pos_header_name', val);
+    }
+
+    function saveCategoriesToStorage() {
+      localStorage.setItem('sys_pos_categories', JSON.stringify(categoriesList));
+    }
+
+    function saveProductsToStorage() {
+      localStorage.setItem('sys_pos_products', JSON.stringify(products));
+    }
+
+    function saveHeldBills() {
+      localStorage.setItem('sys_pos_held_bills', JSON.stringify(heldBills));
+      document.getElementById('holdCount').textContent = heldBills.length;
+    }
+
+    function saveHistory() {
+      localStorage.setItem('sys_pos_history', JSON.stringify(salesHistory));
+    }
+
+    function saveOrderCounter() {
+      localStorage.setItem('sys_pos_order_counter', orderCounter.toString());
+    }
+
+    // Physical Keyboard Listener Initialization
+    document.addEventListener('keydown', function(e) {
+      // Ignore keyboard calculation if the user is typing in an input field or textarea
+      const activeTag = document.activeElement.tagName.toLowerCase();
+      if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') {
+        return;
+      }
+
+      // Numbers and Decimal input
+      if ((e.key >= '0' && e.key <= '9') || e.key === '.') {
+        e.preventDefault();
+        pressKey(e.key);
+      } 
+      // Backspace key
+      else if (e.key === 'Backspace') {
+        e.preventDefault();
+        pressKey('back');
+      } 
+      // Enter key (Checkout or Manual Entry)
+      else if (e.key === 'Enter') {
+        e.preventDefault();
+        pressEnter();
+      } 
+      // Spacebar (Hold Bill)
+      else if (e.key === ' ') {
+        e.preventDefault();
+        holdCurrentBill();
+      } 
+      // Key 'k' or 'K' (Print KOT)
+      else if (e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        printKOT();
+      } 
+      // Escape key (Close active modals)
+      else if (e.key === 'Escape') {
+        const modals = document.querySelectorAll('.modal-overlay');
+        modals.forEach(m => m.style.display = 'none');
+      }
+    });
+
+    function renderCategories() {
+      const catContainer = document.getElementById('categoryList');
+      catContainer.innerHTML = categoriesList.map((catObj, index) => {
+        const fullCatName = formatCatName(catObj);
+        const isActive = fullCatName === selectedCategory;
+        return `
+          <div class="category-btn-wrapper">
+            <button class="category-btn ${isActive ? 'active' : ''}" onclick="selectCategory('${fullCatName}')" title="${fullCatName}">
+              ${fullCatName}
+            </button>
+            <button class="btn-cat-opt" onclick="openEditCategoryModal(${index})" title="Edit Category">✏️</button>
+            <button class="btn-cat-opt" onclick="deleteCategory(${index})" title="Delete Category" style="color:#dc2626;">🗑️</button>
+          </div>
+        `;
+      }).join('');
+
+      const modalCatSelect = document.getElementById('newProdCat');
+      modalCatSelect.innerHTML = categoriesList.map(cat => {
+        const name = formatCatName(cat);
+        return `<option value="${name}">${name}</option>`;
+      }).join('');
+    }
+
+    function selectCategory(fullCatName) {
+      selectedCategory = fullCatName;
+      renderCategories();
+      renderProducts();
+    }
+
+    function openAddCategoryModal() {
+      document.getElementById('addCategoryModal').style.display = 'flex';
+    }
+
+    function saveNewCategory(e) {
+      e.preventDefault();
+      const title = document.getElementById('newCatTitle').value.trim();
+      let num = document.getElementById('newCatNumber').value.trim();
+      if (num && !num.startsWith('#')) num = '#' + num;
+
+      const newCatObj = { name: title, num: num };
+      categoriesList.push(newCatObj);
+      saveCategoriesToStorage();
+
+      document.getElementById('newCatTitle').value = '';
+      document.getElementById('newCatNumber').value = '';
+      closeModal('addCategoryModal');
+
+      selectedCategory = formatCatName(newCatObj);
+      renderCategories();
+      renderProducts();
+    }
+
+    function openEditCategoryModal(index) {
+      const cat = categoriesList[index];
+      document.getElementById('editCatIndex').value = index;
+      document.getElementById('editCatTitle').value = cat.name;
+      document.getElementById('editCatNumber').value = cat.num;
+      document.getElementById('editCategoryModal').style.display = 'flex';
+    }
+
+    function saveEditCategory(e) {
+      e.preventDefault();
+      const index = parseInt(document.getElementById('editCatIndex').value);
+      const oldFullName = formatCatName(categoriesList[index]);
+
+      const title = document.getElementById('editCatTitle').value.trim();
+      let num = document.getElementById('editCatNumber').value.trim();
+      if (num && !num.startsWith('#')) num = '#' + num;
+
+      const updatedCatObj = { name: title, num: num };
+      const newFullName = formatCatName(updatedCatObj);
+
+      categoriesList[index] = updatedCatObj;
+      saveCategoriesToStorage();
+
+      products.forEach(p => {
+        if (p.cat === oldFullName) {
+          p.cat = newFullName;
+        }
+      });
+      saveProductsToStorage();
+
+      if (selectedCategory === oldFullName) {
+        selectedCategory = newFullName;
+      }
+
+      closeModal('editCategoryModal');
+      renderCategories();
+      renderProducts();
+    }
+
+    function deleteCategory(index) {
+      const catObj = categoriesList[index];
+      const fullName = formatCatName(catObj);
+
+      if (confirm(`Are you sure you want to delete category "${fullName}"?`)) {
+        categoriesList.splice(index, 1);
+        saveCategoriesToStorage();
+
+        if (selectedCategory === fullName) {
+          selectedCategory = categoriesList.length > 0 ? formatCatName(categoriesList[0]) : "";
+        }
+
+        renderCategories();
+        renderProducts();
+      }
+    }
+
+    function resetCategories() {
+      if (confirm("Reset categories back to default list?")) {
+        categoriesList = [...defaultCategories];
+        saveCategoriesToStorage();
+        selectedCategory = formatCatName(categoriesList[0]);
+        renderCategories();
+        renderProducts();
+      }
+    }
+
+    function renderProducts() {
+      const grid = document.getElementById('itemsGrid');
+      const filtered = products.filter(p => p.cat === selectedCategory || !p.cat);
+      
+      grid.innerHTML = filtered.map(p => `
+        <div class="item-card ${p.selected ? 'selected' : ''}" onclick="addToCart(${p.id})">
+          <div class="item-card-img-wrapper">
+            <img src="${p.img}" alt="${p.name}">
+            <div class="card-actions">
+              <button class="btn-card-action" onclick="event.stopPropagation(); triggerQuickPhotoUpload(${p.id})">Edit Photo</button>
+              <button class="btn-card-action btn-del" onclick="event.stopPropagation(); removeProduct(${p.id})">Delete</button>
+            </div>
+          </div>
+          <div class="item-price">Rs ${p.price}</div>
+          <div class="item-title">${p.name}</div>
+        </div>
+      `).join('');
+    }
+
+    function removeProduct(id) {
+      const prod = products.find(p => p.id === id);
+      if (!prod) return;
+      if (confirm(`Are you sure you want to remove "${prod.name}" from the menu?`)) {
+        products = products.filter(p => p.id !== id);
+        saveProductsToStorage();
+        removeFromCart(id);
+        renderProducts();
+      }
+    }
+
+    function triggerQuickPhotoUpload(productId) {
+      quickPhotoTargetId = productId;
+      document.getElementById('quickFileInput').click();
+    }
+
+    function handleQuickPhotoUpload(e) {
+      const file = e.target.files[0];
+      if (file && quickPhotoTargetId) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const prod = products.find(p => p.id === quickPhotoTargetId);
+          if (prod) {
+            prod.img = evt.target.result;
+            saveProductsToStorage();
+            renderProducts();
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function openAddProductModal() {
+      document.getElementById('addProductModal').style.display = 'flex';
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    function previewImageFile(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          uploadedModalBase64 = evt.target.result;
+          document.getElementById('modalImgPreview').src = uploadedModalBase64;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function previewImageUrl(url) {
+      if (url.trim()) {
+        uploadedModalBase64 = url;
+        document.getElementById('modalImgPreview').src = url;
+      }
+    }
+
+    function saveNewProduct(e) {
+      e.preventDefault();
+      const name = document.getElementById('newProdName').value;
+      const cat = document.getElementById('newProdCat').value;
+      const price = parseFloat(document.getElementById('newProdPrice').value) || 0;
+      const img = uploadedModalBase64 || "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=200";
+
+      const newProd = { id: Date.now(), cat, name, price, img };
+
+      products.push(newProd);
+      saveProductsToStorage();
+      closeModal('addProductModal');
+      selectCategory(cat);
+    }
+
+    function addToCart(id) {
+      const prod = products.find(p => p.id === id);
+      if (!prod) return;
+      const qtyEntered = parseInt(document.getElementById('qtyInput').value) || 1;
+      const existing = cart.find(item => item.id === id);
+
+      if (existing) {
+        existing.qty += qtyEntered;
+      } else {
+        cart.push({ ...prod, qty: qtyEntered });
+      }
+
+      products.forEach(p => p.selected = (p.id === id));
+      document.getElementById('qtyInput').value = 1;
+      renderProducts();
+      renderCart();
+    }
+
+    function removeFromCart(id) {
+      cart = cart.filter(item => item.id !== id);
+      renderCart();
+    }
+
+    function setCalcMode(mode) {
+      calcMode = mode;
+      document.getElementById('btnModeAuto').classList.toggle('active', mode === 'auto');
+      document.getElementById('btnModeManual').classList.toggle('active', mode === 'manual');
+      renderCart();
+    }
+
+    function renderCart() {
+      const container = document.getElementById('cartItems');
+      container.innerHTML = cart.map(item => `
+        <div class="cart-row">
+          <span>${item.name}</span>
+          <span>${item.price}</span>
+          <span>${item.qty}</span>
+          <span class="btn-del-item" onclick="removeFromCart(${item.id})">×</span>
+        </div>
+      `).join('');
+
+      let total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      
+      if (calcMode === 'manual') {
+        total = manualTotal;
+      } else {
+        manualTotal = total;
+      }
+
+      const cash = parseFloat(cashInput) || 0;
+      const balance = cash - total;
+
+      document.getElementById('totalDisplay').textContent = `Rs ${total.toFixed(2)}`;
+      document.getElementById('cashDisplay').textContent = `Rs ${cash}`;
+      document.getElementById('balanceDisplay').textContent = `Rs ${balance.toFixed(2)}`;
+    }
+
+    function pressKey(key) {
+      if (key === 'back') {
+        cashInput = cashInput.slice(0, -1) || "0";
+      } else {
+        if (cashInput === "0" && key !== '.') {
+          cashInput = key;
+        } else {
+          cashInput += key;
+        }
+      }
+      renderCart();
+    }
+
+    function pressEnter() {
+      if (calcMode === 'manual') {
+        const custom = prompt("Enter Manual Total Amount (Rs):", manualTotal);
+        if (custom !== null) {
+          manualTotal = parseFloat(custom) || 0;
+          renderCart();
+        }
+      } else {
+        processCheckout();
+      }
+    }
+
+    function setOrderType(type) {
+      orderType = type;
+      document.getElementById('orderTypeSelect').value = type;
+      document.getElementById('btnTypeDine').classList.toggle('active', type === 'Dine-In');
+      document.getElementById('btnTypeDelivery').classList.toggle('active', type === 'Delivery');
+      document.getElementById('btnTypeTakeaway').classList.toggle('active', type === 'Takeaway');
+    }
+
+    function holdCurrentBill() {
+      if (cart.length === 0) return alert('Cart is empty!');
+      const name = document.getElementById('tableName').value || 'Guest';
+      heldBills.push({
+        id: Date.now(),
+        name,
+        cart: [...cart],
+        type: orderType,
+        total: manualTotal
+      });
+      cart = [];
+      document.getElementById('tableName').value = '';
+      saveHeldBills();
+      renderCart();
+      alert('Bill Held Successfully!');
+    }
+
+    function openHoldedBillsModal() {
+      document.getElementById('holdedModal').style.display = 'flex';
+      const list = document.getElementById('holdedBillsList');
+      if (heldBills.length === 0) {
+        list.innerHTML = '<p style="font-size:12px; color:#666;">No held bills found.</p>';
+        return;
+      }
+      list.innerHTML = heldBills.map((b, index) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; border-bottom:1px solid #eee; font-size:12px;">
+          <div>
+            <strong>${b.name}</strong> (${b.type}) - Rs ${b.total}
+          </div>
+          <button style="padding:4px 8px; background:#10b981; color:#fff; border:none; border-radius:3px; cursor:pointer;" onclick="restoreBill(${index})">Restore</button>
+        </div>
+      `).join('');
+    }
+
+    function restoreBill(index) {
+      const restored = heldBills.splice(index, 1)[0];
+      cart = restored.cart;
+      orderType = restored.type;
+      document.getElementById('tableName').value = restored.name;
+      saveHeldBills();
+      closeModal('holdedModal');
+      renderCart();
+    }
+
+    function printKOT() {
+      if (cart.length === 0) return alert('Cart is empty for KOT!');
+      const tableName = document.getElementById('tableName').value || 'Takeaway';
+      const printArea = document.getElementById('printableArea');
+      printArea.innerHTML = `
+        <div style="padding:20px; font-family:monospace;">
+          <h2>KITCHEN ORDER TICKET (KOT)</h2>
+          <p>Order Type: ${orderType} | Table/Name: ${tableName}</p>
+          <hr/>
+          <ul>
+            ${cart.map(i => `<li>${i.name} x${i.qty}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+      window.print();
+    }
+
+    function processCheckout() {
+      if (cart.length === 0) return alert('Cart is empty!');
+      const total = manualTotal;
+      const cash = parseFloat(cashInput) || 0;
+      if (cash < total && calcMode === 'auto') {
+        if (!confirm('Cash entered is less than total balance. Proceed anyway?')) return;
+      }
+
+      const billNoStr = "Bill No: " + orderCounter;
+      orderCounter++;
+      saveOrderCounter();
+
+      const now = new Date();
+      const dateStr = now.toISOString().slice(0, 10) + ' ' + now.toTimeString().slice(0, 5);
+      const yearStr = now.getFullYear().toString();
+
+      salesHistory.unshift({
+        id: billNoStr,
+        timestamp: dateStr,
+        year: yearStr,
+        type: orderType,
+        name: document.getElementById('tableName').value || 'Customer',
+        total: total,
+        status: 'Completed'
+      });
+
+      saveHistory();
+
+      const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+
+      const printArea = document.getElementById('printableArea');
+      printArea.innerHTML = `
+        <div style="padding:20px; font-family:sans-serif; text-align:center; max-width:300px; margin:0 auto;">
+          <h2 style="margin:0;">Flame Kitchen</h2>
+          <h3 style="margin:2px 0 10px 0;">Restaurant</h3>
+          <p style="font-size:11px; margin:2px 0;">177-C, Tenkasi - Madurai Rd,<br>Maharaj Nagar,<br>Kadayanallur, Tamil Nadu</p>
+          <p style="font-size:11px; margin:4px 0;">Contact No: 07736007172</p>
+          <p style="font-size:11px; margin:4px 0;">${dateStr}</p>
+          <h4 style="margin:6px 0 2px 0;">Quick Bill</h4>
+          <h2 style="margin:2px 0;">${billNoStr}</h2>
+          <hr style="border-style:dashed; margin:8px 0;"/>
+          <p style="text-align:left; font-size:11px; margin:2px 0;"><strong>Quick Bill</strong></p>
+          <p style="text-align:left; font-size:11px; margin:2px 0;">Pay Mode: Cash</p>
+          <hr style="border-style:dashed; margin:8px 0;"/>
+          <table style="width:100%; text-align:left; font-size:11px; border-collapse:collapse;">
+            <thead>
+              <tr style="border-bottom:1px dashed #000;">
+                <th>Item</th>
+                <th style="text-align:center;">Qty</th>
+                <th style="text-align:right;">Rate</th>
+                <th style="text-align:right;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${cart.map((i, idx) => `
+                <tr>
+                  <td>${idx + 1}.${i.name}</td>
+                  <td style="text-align:center;">${i.qty}</td>
+                  <td style="text-align:right;">${i.price}</td>
+                  <td style="text-align:right;">${i.price * i.qty}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <hr style="border-style:dashed; margin:8px 0;"/>
+          <p style="display:flex; justify-content:space-between; font-size:11px; font-weight:bold; margin:4px 0;">
+            <span>Total Qty: ${totalQty}</span>
+            <span>Total Amount : Rs ${total.toFixed(2)}</span>
+          </p>
+          <h3 style="margin:10px 0 4px 0; border-top:1px dashed #000; border-bottom:1px dashed #000; padding:6px 0;">
+            Grand Total : Rs ${total.toFixed(2)}
+          </h3>
+          <p style="font-size:11px; margin-top:8px;">Thank you for dining with us!</p>
+        </div>
+      `;
+      window.print();
+
+      cart = [];
+      cashInput = "0";
+      document.getElementById('tableName').value = '';
+      renderCart();
+    }
+
+    function openHistoryModal() {
+      document.getElementById('historyModal').style.display = 'flex';
+      renderHistoryTable();
+    }
+
+    function renderHistoryTable() {
+      const selectedYear = document.getElementById('historyYearFilter').value;
+      const selectedDate = document.getElementById('historyDateFilter').value;
+      const tbody = document.getElementById('historyTableBody');
+
+      const filtered = salesHistory.filter(h => {
+        const matchesYear = (selectedYear === 'ALL' || h.year === selectedYear);
+        const matchesDate = (!selectedDate || h.timestamp.startsWith(selectedDate));
+        return matchesYear && matchesDate;
+      });
+
+      const totalSellAmount = filtered.reduce((sum, h) => sum + Number(h.total || 0), 0);
+      const totalOrdersCount = filtered.length;
+      const avgOrderValue = totalOrdersCount > 0 ? (totalSellAmount / totalOrdersCount) : 0;
+
+      document.getElementById('summaryTotalSales').textContent = `Rs ${totalSellAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      document.getElementById('summaryTotalOrders').textContent = totalOrdersCount;
+      document.getElementById('summaryAvgOrder').textContent = `Rs ${avgOrderValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align:center; padding:15px; color:#64748b;">
+              No sales records found for selected filters.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(h => `
+        <tr>
+          <td><strong>${h.id}</strong></td>
+          <td>${h.timestamp}</td>
+          <td>${h.year}</td>
+          <td>${h.type}</td>
+          <td>${h.name}</td>
+          <td><strong>Rs ${Number(h.total).toLocaleString('en-US')}</strong></td>
+          <td><span class="badge badge-completed">${h.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function resetHistoryFilters() {
+      document.getElementById('historyYearFilter').value = 'ALL';
+      document.getElementById('historyDateFilter').value = '';
+      renderHistoryTable();
+    }
+
+    function clearHistory() {
+      if (confirm('Are you sure you want to clear all sales history?')) {
+        salesHistory = [];
+        saveHistory();
+        renderHistoryTable();
+      }
+    }
+
+    renderCategories();
+    renderProducts();
+    saveHeldBills();
+  </script>
+</body>
+</html>
